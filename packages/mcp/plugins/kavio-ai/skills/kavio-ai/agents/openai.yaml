@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kavio AI"
+  short_description: "Author and validate Kavio videos"
+  default_prompt: "Use $kavio-ai to create and validate a Kavio composition from my video brief."

@@ -507,6 +507,23 @@ a {
   line-height: 1.48;
 }
 
+.examples-hero {
+  padding-top: 72px;
+  padding-bottom: 56px;
+}
+
+.examples-hero h1 {
+  max-width: 860px;
+  margin-bottom: 18px;
+  font-size: 4.25rem;
+  line-height: 1.03;
+}
+
+.examples-hero p:last-child {
+  max-width: 720px;
+  font-size: 1.16rem;
+}
+
 .content-section {
   width: min(980px, calc(100% - 36px));
   margin: 0 auto;
@@ -731,6 +748,41 @@ pre {
   overflow-wrap: anywhere;
 }
 
+.install-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.install-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.install-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.install-card p {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.install-card pre {
+  margin: 0;
+  padding: 14px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 .example-detail {
   padding: 30px 0;
   border-bottom: 1px solid var(--line);
@@ -912,12 +964,21 @@ pre {
     padding-top: 142px;
   }
 
+  .examples-hero {
+    padding-top: 144px;
+  }
+
+  .examples-hero h1 {
+    font-size: 3rem;
+  }
+
   .project-grid,
   .link-grid,
   .split-section,
   .motion-gallery,
   .package-grid,
   .resource-grid,
+  .install-grid,
   .definition-list div,
   .logo-option-grid,
   .logo-option {
@@ -958,6 +1019,20 @@ pre {
 
   .hero h1 {
     font-size: clamp(4rem, 24vw, 6rem);
+  }
+
+  .examples-hero {
+    padding-top: 128px;
+    padding-bottom: 44px;
+  }
+
+  .examples-hero h1 {
+    font-size: 2.18rem;
+    line-height: 1.08;
+  }
+
+  .examples-hero p:last-child {
+    font-size: 1rem;
   }
 
   .hero-actions,

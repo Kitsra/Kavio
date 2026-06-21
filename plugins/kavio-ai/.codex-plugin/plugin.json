@@ -1,0 +1,40 @@
+{
+  "name": "kavio-ai",
+  "version": "0.1.0",
+  "description": "Author validated Kavio video templates from natural-language briefs.",
+  "author": {
+    "name": "Kitsra"
+  },
+  "homepage": "https://github.com/kitsra/kavio#readme",
+  "repository": "https://github.com/kitsra/kavio.git",
+  "license": "Elastic-2.0",
+  "keywords": [
+    "kavio",
+    "video",
+    "ai",
+    "json-schema",
+    "automation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Kavio",
+    "shortDescription": "Author validated video templates",
+    "longDescription": "Turn briefs into portable Kavio JSON compositions, then validate, inspect, preview, render, and adapt them for social exports with the local Kavio CLI workflow.",
+    "developerName": "Kitsra",
+    "category": "Creativity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/kitsra/kavio#readme",
+    "defaultPrompt": [
+      "Create a Kavio video from my brief.",
+      "Repair and validate this Kavio JSON.",
+      "Adapt this composition for social exports."
+    ],
+    "brandColor": "#60BFD0",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "screenshots": []
+  }
+}

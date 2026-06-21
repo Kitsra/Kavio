@@ -1,0 +1,20 @@
+{
+  "name": "kavio-local",
+  "interface": {
+    "displayName": "Kavio Local"
+  },
+  "plugins": [
+    {
+      "name": "kavio-ai",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kavio-ai"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Creativity"
+    }
+  ]
+}
