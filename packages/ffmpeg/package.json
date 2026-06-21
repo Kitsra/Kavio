@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "description": "FFmpeg planning primitives for Kavio rendering.",
   "license": "Elastic-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitsra/kavio.git"
+  },
   "type": "module",
   "sideEffects": false,
   "publishConfig": {

@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "description": "Model Context Protocol server and provider tool adapters for Kavio.",
   "license": "Elastic-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitsra/kavio.git"
+  },
   "type": "module",
   "publishConfig": {
     "access": "public"
