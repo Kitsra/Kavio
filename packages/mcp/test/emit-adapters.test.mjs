@@ -30,3 +30,39 @@ test("emit-adapters requires --out", async () => {
   const code = await run(["emit-adapters"]);
   assert.notEqual(code, 0);
 });
+
+test("emit-skill writes the vendor-neutral Kavio skill", async () => {
+  const out = await mkdtemp(join(tmpdir(), "kavio-skill-"));
+  const code = await run(["emit-skill", "--out", out]);
+  assert.equal(code, 0);
+
+  const skill = await readFile(join(out, "kavio-ai", "SKILL.md"), "utf8");
+  assert.match(skill, /^---\nname: kavio-ai\n/m);
+  assert.match(skill, /vendor-neutral skill/);
+  assert.doesNotMatch(skill, /Codex/);
+});
+
+test("emit-skill requires --out", async () => {
+  const code = await run(["emit-skill"]);
+  assert.notEqual(code, 0);
+});
+
+test("npm package includes Claude, Codex, and Gemini metadata next to the skill", async () => {
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const pluginRoot = join(root, "plugins", "kavio-ai");
+  const claudeManifest = JSON.parse(await readFile(join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8"));
+  const codexManifest = JSON.parse(await readFile(join(pluginRoot, ".codex-plugin", "plugin.json"), "utf8"));
+  const geminiManifest = JSON.parse(await readFile(join(pluginRoot, "gemini-extension.json"), "utf8"));
+  const antigravityManifest = JSON.parse(await readFile(join(pluginRoot, "plugin.json"), "utf8"));
+
+  assert.equal(claudeManifest.name, "kavio-ai");
+  assert.equal(claudeManifest.skills, "./skills/");
+  assert.equal(codexManifest.name, "kavio-ai");
+  assert.equal(codexManifest.interface.displayName, "Kavio");
+  assert.equal(codexManifest.skills, "./skills/");
+  assert.equal(geminiManifest.name, "kavio-ai");
+  assert.equal(antigravityManifest.name, "kavio-ai");
+
+  const skill = await readFile(join(pluginRoot, "skills", "kavio-ai", "SKILL.md"), "utf8");
+  assert.match(skill, /vendor-neutral skill/);
+});

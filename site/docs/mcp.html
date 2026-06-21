@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Kavio MCP Server</title>
+    <title>Kavio MCP Server And AI Plugins</title>
     <meta
       name="description"
-      content="Kavio MCP server documentation for agentic video workflows, package boundaries, tools, safety, rendering, and provider adapters."
+      content="Kavio MCP server, portable skill, and plugin documentation for agentic video workflows, provider adapters, safety, and rendering."
     />
-    <meta property="og:title" content="Kavio MCP Server" />
+    <meta property="og:title" content="Kavio MCP Server And AI Plugins" />
     <meta property="og:type" content="article" />
     <link rel="icon" href="../assets/brand/kavio-frame-stack-icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../styles.css" />
@@ -16,8 +16,8 @@
       {
         "@context": "https://schema.org",
         "@type": "TechArticle",
-        "headline": "Kavio MCP Server",
-        "about": "Model Context Protocol server for Kavio agentic video workflows",
+        "headline": "Kavio MCP Server And AI Plugins",
+        "about": "Model Context Protocol server, portable skill, and plugins for Kavio agentic video workflows",
         "isPartOf": {
           "@type": "SoftwareSourceCode",
           "name": "Kavio",
@@ -44,12 +44,12 @@
     <main>
       <section class="page-hero">
         <p class="eyebrow">Docs</p>
-        <h1>Kavio MCP server.</h1>
+        <h1>Kavio MCP server and AI plugins.</h1>
         <p>
-          The MCP server is the agent-facing layer for Kavio. It exposes safe
-          composition validation, inspection, prop resolution, render planning,
-          rendering, resources, prompts, and provider tool adapters without
-          making each agent integrate the video engine directly.
+          Kavio gives agents three integration paths: an MCP server for hosts
+          that speak MCP, generated provider tool schemas for direct tool
+          calling, and a portable skill/plugin bundle for agents that prefer
+          local instructions over an MCP server.
         </p>
       </section>
 
@@ -58,8 +58,42 @@
         <p>
           The <code>@kitsra/kavio-mcp</code> package is implemented. It calls
           <code>@kitsra/kavio-render</code> for real render work and keeps Playwright,
-          FFmpeg binaries, and process-spawning code out of MCP handlers.
+          FFmpeg binaries, and process-spawning code out of MCP handlers. The
+          same package also ships <code>plugins/kavio-ai</code>, a vendor-neutral
+          skill bundle with Codex, Claude, Gemini CLI, and Antigravity manifests.
         </p>
+      </section>
+
+      <section class="content-section">
+        <h2>Choose A Path</h2>
+        <div class="reference-table-wrap">
+          <table class="reference-table">
+            <thead>
+              <tr>
+                <th>Target</th>
+                <th>Use when</th>
+                <th>Install shape</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>MCP</code></td>
+                <td>The host can run a server and call tools.</td>
+                <td>Configure <code>kavio-mcp</code> as an MCP server.</td>
+              </tr>
+              <tr>
+                <td><code>Skill</code></td>
+                <td>The agent wants local instructions without MCP.</td>
+                <td>Emit <code>skills/kavio-ai/SKILL.md</code> from npm.</td>
+              </tr>
+              <tr>
+                <td><code>Plugin</code></td>
+                <td>The vendor supports plugin or extension manifests.</td>
+                <td>Install <code>plugins/kavio-ai</code> as the plugin root.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section class="content-section">
@@ -67,7 +101,7 @@
         <dl class="definition-list">
           <div>
             <dt>@kitsra/kavio-mcp</dt>
-            <dd>Agent-facing protocol layer that exposes tools and resources for Kavio workflows.</dd>
+            <dd>Agent-facing MCP server, provider adapters, portable skill, and plugin manifests for Kavio workflows.</dd>
           </div>
           <div>
             <dt>@kitsra/kavio-render</dt>
@@ -86,6 +120,61 @@
             <dd>Shared render harness and browser runtime used for preview and export parity.</dd>
           </div>
         </dl>
+      </section>
+
+      <section class="content-section">
+        <h2>Skill And Plugin Bundle</h2>
+        <p>
+          The plugin bundle lives at <code>plugins/kavio-ai</code>. Codex,
+          Claude, Gemini CLI, and Antigravity each read their own manifest from
+          that folder, while all of them share one <code>skills/kavio-ai</code>
+          workflow for authoring, validating, inspecting, previewing, and
+          rendering Kavio compositions.
+        </p>
+        <div class="resource-grid">
+          <a href="https://github.com/kitsra/kavio/tree/main/plugins/kavio-ai/.codex-plugin"><strong>Codex</strong><span>Reads <code>.codex-plugin/plugin.json</code> and installs through the repo marketplace.</span></a>
+          <a href="https://github.com/kitsra/kavio/tree/main/plugins/kavio-ai/.claude-plugin"><strong>Claude Code</strong><span>Reads <code>.claude-plugin/plugin.json</code> or a marketplace entry pointing at the bundle.</span></a>
+          <a href="https://github.com/kitsra/kavio/tree/main/plugins/kavio-ai"><strong>Gemini CLI</strong><span>Reads <code>gemini-extension.json</code> when the bundle is installed as an extension root.</span></a>
+          <a href="https://github.com/kitsra/kavio/tree/main/plugins/kavio-ai"><strong>Antigravity</strong><span>Reads <code>plugin.json</code> when the bundle is installed as a plugin root.</span></a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Install Paths</h2>
+        <p>
+          Use the smallest install path that fits the host.
+        </p>
+        <div class="install-grid">
+          <article class="install-card">
+            <h3>Generic Skill</h3>
+            <pre><code>pnpm dlx @kitsra/kavio-mcp emit-skill --out ./skills</code></pre>
+            <p>Writes <code>./skills/kavio-ai/SKILL.md</code>.</p>
+          </article>
+          <article class="install-card">
+            <h3>Codex</h3>
+            <pre><code>codex plugin marketplace add .</code></pre>
+            <p>The marketplace points Codex at <code>./plugins/kavio-ai</code>.</p>
+          </article>
+          <article class="install-card">
+            <h3>Claude Code</h3>
+            <pre><code>claude --plugin-dir ./plugins/kavio-ai</code></pre>
+            <p>Or install <code>kavio-ai@kavio-local</code> from the local marketplace.</p>
+          </article>
+          <article class="install-card">
+            <h3>Gemini CLI</h3>
+            <pre><code>gemini extensions install ./plugins/kavio-ai</code></pre>
+            <p>For remote install, publish the bundle with <code>gemini-extension.json</code> at the root.</p>
+          </article>
+          <article class="install-card">
+            <h3>Antigravity</h3>
+            <pre><code>agy plugin install ./plugins/kavio-ai</code></pre>
+            <p>For remote install, publish the bundle with <code>plugin.json</code> at the root.</p>
+          </article>
+        </div>
+        <p>
+          The published <code>@kitsra/kavio-mcp</code> package mirrors this
+          bundle under <code>plugins/kavio-ai</code>.
+        </p>
       </section>
 
       <section class="content-section">
@@ -152,7 +241,7 @@
           <a href="rendering.html"><strong>Rendering status</strong><span>Implemented render pieces and current limits.</span></a>
           <a href="api.html"><strong>API overview</strong><span>Package contracts used by MCP handlers.</span></a>
           <a href="../packages.html"><strong>Packages</strong><span>Workspace package ownership and MCP boundary.</span></a>
-          <a href="https://github.com/kitsra/kavio"><strong>GitHub repository</strong><span>Source code and active MCP implementation work.</span></a>
+          <a href="https://github.com/kitsra/kavio"><strong>GitHub repository</strong><span>Source code for the MCP server, portable skill, plugins, and renderer packages.</span></a>
         </div>
       </section>
     </main>

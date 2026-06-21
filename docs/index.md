@@ -36,8 +36,8 @@ which rendering pieces are complete.
 - [Rendering status](rendering.md): what is implemented now and what remains
   after initial opaque video export support.
 - [MVP demo fixture](demo.md): the multi-row, multi-aspect demo fixture.
-- [MCP server and agent tools](mcp.md): MCP setup, tools, resources, prompts,
-  provider adapters, and render safety notes.
+- [MCP server, skill, and agent tools](mcp.md): MCP setup, tools, resources,
+  prompts, provider adapters, portable skill/plugin usage, and render safety notes.
 
 ## Reference
 

@@ -22,7 +22,8 @@ https://github.com/kitsra/kavio
 
 Implemented: schema, validator, timeline core, TypeScript builder, browser
 preview runtime, render-worker contracts, FFmpeg planning helpers, render
-execution, CLI commands, MCP server, provider adapters, and MVP demo fixtures.
+execution, CLI commands, MCP server, provider adapters, portable skill/plugin
+bundle, and MVP demo fixtures.
 
 `kavio render` supports opaque `mp4`, `webm`, and `mov` outputs. Schema-valid
 `gif`, `png-sequence`, and transparent final outputs are reserved for later
@@ -45,7 +46,7 @@ render paths.
 - Browser preview: `docs/preview.html`
 - Rendering status: `docs/rendering.html`
 - API overview: `docs/api.html`
-- MCP server: `docs/mcp.html`
+- MCP server and AI plugins: `docs/mcp.html`
 - Troubleshooting: `docs/troubleshooting.html`
 
 ## Builder And Template Reference
@@ -102,7 +103,7 @@ Important builder exports include `video`, `prop`, `validate`, `keyframes`,
 - `@kitsra/kavio-ffmpeg`: inspectable FFmpeg plan construction.
 - `@kitsra/kavio-cli`: local commands for validation, inspection, migration, preview, presets, and rendering.
 - `@kitsra/kavio-render`: render execution layer for browser capture, FFmpeg orchestration, MP4 output, metadata, cleanup, and cancellation.
-- `@kitsra/kavio-mcp`: MCP server and provider tool adapters for agent-facing Kavio workflows.
+- `@kitsra/kavio-mcp`: MCP server, provider tool adapters, portable skill, and plugin manifests for agent-facing Kavio workflows.
 
 ## Examples Covered
 

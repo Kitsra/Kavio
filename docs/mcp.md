@@ -1,4 +1,4 @@
-# MCP Server And Agent Tools
+# MCP Server, Skill, And Agent Tools
 
 `@kitsra/kavio-mcp` exposes Kavio composition authoring, validation, planning, and
 rendering to AI agents. It provides:
@@ -7,10 +7,15 @@ rendering to AI agents. It provides:
 - A single shared catalog of tools, resources, and prompts.
 - Generated Anthropic, OpenAI, and Gemini tool schema files for non-MCP agent
   runtimes.
+- A portable skill, installable from the npm package, for agents that prefer
+  local skill instructions over MCP configuration.
 
 The catalog is intentionally backed by the same schema, presets, builder, and
 render packages used by the CLI. Agent-facing behavior should stay aligned with
 local Kavio workflows.
+
+Use MCP when the target vendor or host supports it. Use the skill path when an
+agent can load local skills but cannot, or should not, run an MCP server.
 
 ## Install And Run
 
@@ -218,6 +223,93 @@ This writes:
 
 The adapters are generated from the same tool definitions used by the MCP
 server, so descriptions and input schemas stay synchronized.
+
+## Portable Skill And Plugin
+
+Use MCP when the host can run an MCP server. Use the portable skill/plugin
+bundle when the host prefers local instructions or vendor-native plugin
+manifests.
+
+At a glance:
+
+| Target | Local source | Install shape |
+| --- | --- | --- |
+| Generic skill | `skills/kavio-ai/SKILL.md` | Emit from npm with `kavio-mcp emit-skill`. |
+| Codex | `plugins/kavio-ai/.codex-plugin/plugin.json` | Install through the repo marketplace. |
+| Claude Code | `plugins/kavio-ai/.claude-plugin/plugin.json` | Load the plugin directory or marketplace entry. |
+| Gemini CLI | `plugins/kavio-ai/gemini-extension.json` | Install the bundle as the extension root. |
+| Antigravity | `plugins/kavio-ai/plugin.json` | Install the bundle as the plugin root. |
+
+Emit only the vendor-neutral skill from the published package:
+
+```bash
+pnpm dlx @kitsra/kavio-mcp emit-skill --out ./skills
+# or: pnpx @kitsra/kavio-mcp emit-skill --out ./skills
+```
+
+This writes `./skills/kavio-ai/SKILL.md`. Point the target AI vendor or agent
+runtime at that folder according to its skill-loading conventions.
+
+From a source checkout, the complete bundle lives at `plugins/kavio-ai`. All
+vendor manifests point at the same shared `skills/` directory.
+
+Local checkout installs:
+
+```bash
+# Claude Code
+claude --plugin-dir ./plugins/kavio-ai
+
+# Gemini CLI
+gemini extensions install ./plugins/kavio-ai
+
+# Antigravity
+agy plugin install ./plugins/kavio-ai
+
+# Codex repo marketplace
+codex plugin marketplace add .
+```
+
+Inside Claude Code, the local marketplace flow is:
+
+```text
+/plugin marketplace add .
+/plugin install kavio-ai@kavio-local
+```
+
+For npm-backed Claude marketplace distribution, point the marketplace plugin
+entry at the published Kavio package:
+
+```json
+{
+  "name": "kavio-ai",
+  "displayName": "Kavio",
+  "description": "Author validated Kavio video templates from natural-language briefs.",
+  "category": "design",
+  "source": {
+    "source": "npm",
+    "package": "@kitsra/kavio-mcp",
+    "version": "0.1.0"
+  }
+}
+```
+
+For one-command remote Gemini or Antigravity installs, publish
+`plugins/kavio-ai` as the root of a release archive or dedicated plugin repo.
+Those hosts expect `gemini-extension.json` or `plugin.json` at the install root.
+
+The published `@kitsra/kavio-mcp` package mirrors this layout by shipping
+`plugins/kavio-ai` with the Claude, Codex, Gemini CLI, and Antigravity manifests
+plus the same `skills/kavio-ai/SKILL.md` file.
+
+The skill's local loop mirrors the MCP workflow with CLI commands:
+
+1. Read `docs/schema.md`, `packages/schema/schema/kavio-0.1.schema.json`, and
+   `examples/basic-json/composition.json`.
+2. Draft or repair a Kavio composition JSON document.
+3. Run `node packages/cli/dist/index.js --json validate <file>`.
+4. Fix only the reported validation paths.
+5. Run `node packages/cli/dist/index.js --json inspect <file>`.
+6. Preview or render only when the user asks for visual review or output files.
 
 ## Recommended Agent Loop
 

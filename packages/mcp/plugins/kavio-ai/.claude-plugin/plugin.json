@@ -1,0 +1,19 @@
+{
+  "name": "kavio-ai",
+  "version": "0.1.0",
+  "description": "Author validated Kavio video templates from natural-language briefs.",
+  "author": {
+    "name": "Kitsra"
+  },
+  "homepage": "https://github.com/kitsra/kavio#readme",
+  "repository": "https://github.com/kitsra/kavio.git",
+  "license": "Elastic-2.0",
+  "keywords": [
+    "kavio",
+    "video",
+    "ai",
+    "json-schema",
+    "automation"
+  ],
+  "skills": "./skills/"
+}

@@ -208,7 +208,8 @@ See [cli.md](cli.md).
 
 ## @kitsra/kavio-mcp
 
-Owns agent-facing MCP and provider tool schemas.
+Owns agent-facing MCP, provider tool schemas, portable skill, and plugin
+manifests.
 
 Capabilities include:
 
@@ -217,6 +218,8 @@ Capabilities include:
 - Resources for the schema, presets, examples, and enum reference.
 - Prompts for authoring, repair, and platform adaptation.
 - Anthropic, OpenAI, and Gemini adapter generation from the same catalog.
+- A portable `plugins/kavio-ai` bundle with Codex, Claude, Gemini CLI, and
+  Antigravity manifests sharing one vendor-neutral Kavio skill.
 
 See [mcp.md](mcp.md) for setup, tool input shapes, render behavior, provider
-adapter generation, and troubleshooting.
+adapter generation, skill/plugin usage, and troubleshooting.

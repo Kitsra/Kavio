@@ -66,7 +66,7 @@ secrets, and how consumers provision the optional render binaries.
 - [Browser preview](docs/preview.md)
 - [Render pipeline](docs/render-pipeline.md)
 - [Rendering status](docs/rendering.md)
-- [MCP server and agent tools](docs/mcp.md)
+- [MCP server, skill, and agent tools](docs/mcp.md)
 - [API reference](docs/api-reference.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Package API overview](docs/packages.md)
@@ -108,7 +108,7 @@ node packages/cli/dist/index.js render examples/kavio-promo/generated/all-motion
 - `@kitsra/kavio-mcp`: Model Context Protocol server plus Anthropic/OpenAI/Gemini tool
   adapters so AI agents can author, validate, plan, and render Kavio videos.
 
-## AI Agents (MCP)
+## AI Agents
 
 `@kitsra/kavio-mcp` exposes Kavio to AI agents as a Model Context Protocol server plus
 generated per-provider tool schemas, all from a single tool catalog.
@@ -136,8 +136,23 @@ kavio-mcp emit-adapters --out ./tools
 # writes anthropic.tools.json, openai.tools.json, gemini.tools.json
 ```
 
+For agents that support portable skills but do not want to configure an MCP
+server, install the generic Kavio skill from the published package:
+
+```bash
+pnpm dlx @kitsra/kavio-mcp emit-skill --out ./skills
+# or: pnpx @kitsra/kavio-mcp emit-skill --out ./skills
+```
+
+This writes `./skills/kavio-ai/SKILL.md`, a vendor-neutral local CLI/schema
+repair loop for authoring, validating, inspecting, previewing, and rendering
+Kavio compositions. The repo also includes a portable plugin bundle at
+`plugins/kavio-ai` with the same skill plus Codex, Claude, Gemini CLI, and
+Antigravity plugin/extension manifests for local plugin-based consumers.
+
 See [docs/mcp.md](docs/mcp.md) for setup details, tool input shapes,
-resources, prompts, adapter generation, and render safety notes.
+resources, prompts, skill/plugin usage, adapter generation, and render safety
+notes.
 
 ## Repository Layout
 
