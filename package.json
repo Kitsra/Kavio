@@ -20,7 +20,7 @@
     "prepare": "tsc -b",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish",
+    "release": "node scripts/sync-package-readmes.mjs --write && changeset publish",
     "install:render-binaries": "corepack pnpm run install:render-ffmpeg && corepack pnpm run install:render-browsers",
     "install:render-browsers": "corepack pnpm --filter @kitsra/kavio-render run install:browsers",
     "install:render-ffmpeg": "corepack pnpm rebuild ffmpeg-static",

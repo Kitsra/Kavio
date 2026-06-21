@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const expectedLicense = "Elastic-2.0";
+const expectedRepositoryUrl = "https://github.com/kitsra/kavio.git";
 const failures = [];
 
 const packagePaths = ["package.json"];
@@ -17,6 +18,16 @@ for (const packagePath of packagePaths.sort()) {
   const manifest = JSON.parse(await readFile(join(root, packagePath), "utf8"));
   if (manifest.license !== expectedLicense) {
     failures.push(`${packagePath} must declare "license": "${expectedLicense}".`);
+  }
+  if (packagePath !== "package.json") {
+    if (manifest.repository?.url !== expectedRepositoryUrl) {
+      failures.push(`${packagePath} must declare repository.url as "${expectedRepositoryUrl}".`);
+    }
+    const readmePath = packagePath.replace(/package\.json$/, "README.md");
+    const readme = await readFile(join(root, readmePath), "utf8").catch(() => "");
+    if (readme.trim().length === 0) {
+      failures.push(`${readmePath} must exist and be non-empty for npm package pages.`);
+    }
   }
 }
 
