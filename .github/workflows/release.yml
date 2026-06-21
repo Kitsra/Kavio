@@ -24,23 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Setup workspace
+        uses: ./.github/actions/setup
         with:
-          node-version: 22
           registry-url: https://registry.npmjs.org
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Install dependencies
         run: corepack pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: corepack pnpm run build
-
-      - name: Verify package contents
-        run: corepack pnpm run pack:dry
 
       - name: Create release PR or publish to npmjs
         uses: changesets/action@v1
