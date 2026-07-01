@@ -1,5 +1,5 @@
 import type { KavioDocument } from "@kitsra/kavio-schema";
-import { assembleRenderCommand } from "./assemble-command.js";
+import { assembleDirectRenderCommand, assembleRenderCommand, getDirectRenderSupport } from "./assemble-command.js";
 import { renderError, RENDER_ERROR_CODES } from "./errors.js";
 import { createRenderHarnessServer } from "./harness-server.js";
 import { createFfmpegRunner, type FfmpegChildProcess, type FfmpegSpawn } from "./ffmpeg-runner.js";
@@ -130,6 +130,42 @@ assert(webmArgs.includes("-c:v libvpx-vp9"), "webm defaults to VP9 video");
 assert(webmArgs.includes("-c:a libopus"), "webm defaults to Opus audio");
 assert(!webmArgs.includes("+faststart"), "webm does not use mp4/mov faststart flags");
 
+const directShapeView: KavioDocument = {
+  version: "0.1",
+  composition: { width: 640, height: 360, fps: 30, durationFrames: 45, background: "#000000" },
+  assets: {},
+  layers: [
+    {
+      id: "panel",
+      type: "shape",
+      shape: "rect",
+      fill: "#ff3366",
+      stroke: { color: "#ffffff", width: 4 },
+      opacity: 0.75,
+      startFrame: 5,
+      durationFrames: 20,
+      position: { x: 32, y: 48 },
+      size: { width: 200, height: 96 }
+    }
+  ],
+  audio: [],
+  exports: [{ name: "direct", format: "mp4", codec: "h264", width: 640, height: 360 }]
+};
+const directSupport = getDirectRenderSupport(directShapeView);
+assert(directSupport.ok, "shape-only composition is eligible for FFmpeg-direct render");
+const directArgs = assembleDirectRenderCommand({
+  view: directShapeView,
+  preset: directShapeView.exports[0]!,
+  outputPath: "/tmp/direct.mp4"
+}).join(" ");
+assert(!directArgs.includes("overlay-%05d.png"), "direct render does not read overlay PNG frames");
+assert(!directArgs.includes("overlay="), "direct render does not composite a PNG overlay stream");
+assert(directArgs.includes("drawbox=x=32:y=48:w=200:h=96:color=0xff3366@0.75:t=fill:enable='between(n,5,24)'"), "direct render compiles shape fill to drawbox");
+assert(directArgs.includes("drawbox=x=32:y=48:w=200:h=96:color=0xffffff@0.75:t=4:enable='between(n,5,24)'"), "direct render compiles shape stroke to drawbox");
+
+const directTextSupport = getDirectRenderSupport(graphicsOnlyView);
+assert(!directTextSupport.ok, "text composition is not eligible for FFmpeg-direct render yet");
+
 // --- harness-server.ts -----------------------------------------------------
 
 const harnessServer = await createRenderHarnessServer({ composition: graphicsOnlyView });
@@ -212,6 +248,24 @@ if (successResult.ok) {
 assertEqual(successDriver.renderedFrames.length, 6, "captures every frame");
 assertEqual(successDriver.closes, 1, "closes the browser driver on success");
 assertEqual(successRunner.calls.length, 1, "invokes ffmpeg once");
+
+const directDriver = new FakeBrowserDriver();
+const directRunner = createFakeFfmpegRunner();
+const directRenderResult = await renderComposition(directShapeView, {
+  preset: "direct",
+  outDir,
+  renderMode: "ffmpeg-direct",
+  driver: directDriver,
+  ffmpegRunner: directRunner
+});
+assert(directRenderResult.ok === true, "ffmpeg-direct render succeeds with fakes");
+assertEqual(directDriver.opens, 0, "ffmpeg-direct render does not open the browser driver");
+assertEqual(directDriver.renderedFrames.length, 0, "ffmpeg-direct render does not capture browser frames");
+assertEqual(directRunner.calls.length, 1, "ffmpeg-direct render invokes ffmpeg once");
+assert(!directRunner.calls[0]?.join(" ").includes("overlay-%05d.png"), "ffmpeg-direct render call skips overlay PNG input");
+if (directRenderResult.ok) {
+  assertEqual(directRenderResult.metadata.tools.chromium.revision, "not-used", "ffmpeg-direct metadata records no Chromium use");
+}
 
 const webmRenderDoc: KavioDocument = {
   ...templateDoc,

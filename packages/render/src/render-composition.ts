@@ -19,17 +19,24 @@ import {
   type RenderChecksum,
   type RenderOutputMetadata
 } from "@kitsra/kavio-render-worker";
-import { assembleRenderCommand } from "./assemble-command.js";
+import { assembleDirectRenderCommand, assembleRenderCommand } from "./assemble-command.js";
 import { createFfmpegRunner, type FfmpegRunner } from "./ffmpeg-runner.js";
 import { isRenderError, renderError } from "./errors.js";
 import { PlaywrightDriver } from "./playwright-driver.js";
 import { withEffectiveCodecs } from "./encoding.js";
+
+export type RenderCompositionMode = "browser-overlay" | "ffmpeg-direct";
 
 export interface RenderCompositionOptions {
   preset: string | import("@kitsra/kavio-schema").KavioExportPreset;
   propValues?: Record<string, unknown>;
   outDir?: string;
   outputName?: string;
+  /**
+   * Experimental: "ffmpeg-direct" skips browser PNG capture for compositions
+   * that can be compiled directly into FFmpeg filters.
+   */
+  renderMode?: RenderCompositionMode;
   driver?: BrowserDriver;
   ffmpegRunner?: FfmpegRunner;
   signal?: AbortSignal;
@@ -85,32 +92,26 @@ export async function renderComposition(
   const outputName = options.outputName ?? `${preset.name}.${extensionForFormat(preset.format)}`;
   const outputPath = options.outDir === undefined ? outputName : join(options.outDir, outputName);
   const metadataPreset = withEffectiveCodecs(preset);
+  const renderMode = options.renderMode ?? "browser-overlay";
 
   try {
     const metadata = await withRenderCleanup(async (cleanup) => {
-      const workDir = await mkdtemp(join(tmpdir(), "kavio-render-"));
-      cleanup.defer(
-        createTemporaryFramesCleanupTask(async () => {
-          await rm(workDir, { recursive: true, force: true });
-        }, "workdir")
-      );
-
-      const driver = options.driver ?? new PlaywrightDriver();
-      const framePattern = join(workDir, "overlay-%05d.png");
-
-      // captureFrames manages browser-context cleanup (open → capture → close).
-      await captureFrames({
-        driver,
-        composition: view,
-        continueOnFrameError: options.continueOnFrameError === true,
-        onFrame: async (capture) => {
-          const name = `overlay-${String(capture.frame).padStart(5, "0")}.png`;
-          await writeFile(join(workDir, name), capture.bytes);
-        }
-      });
-
       await mkdir(dirname(outputPath), { recursive: true });
-      const args = assembleRenderCommand({ view, preset, framePattern, outputPath });
+      let browserDriver: BrowserDriver | undefined;
+      const args =
+        renderMode === "ffmpeg-direct"
+          ? assembleDirectRenderCommand({ view, preset, outputPath })
+          : await (async () => {
+              browserDriver = options.driver ?? new PlaywrightDriver();
+              return assembleBrowserOverlayRenderCommand({
+                view,
+                preset,
+                outputPath,
+                driver: browserDriver,
+                continueOnFrameError: options.continueOnFrameError === true,
+                deferCleanup: (task) => cleanup.defer(task)
+              });
+            })();
 
       const ffmpegRunner = options.ffmpegRunner ?? createFfmpegRunner();
       await ffmpegRunner.run(args, options.signal === undefined ? {} : { signal: options.signal });
@@ -123,7 +124,7 @@ export async function renderComposition(
         outputPath,
         checksums: checksum,
         ffmpegVersion: options.ffmpegVersion ?? "ffmpeg-static",
-        chromiumRevision: options.chromiumRevision ?? chromiumRevisionOf(driver)
+        chromiumRevision: options.chromiumRevision ?? (renderMode === "ffmpeg-direct" ? "not-used" : chromiumRevisionOf(browserDriver))
       });
     });
 
@@ -133,7 +134,43 @@ export async function renderComposition(
   }
 }
 
-function chromiumRevisionOf(driver: BrowserDriver): string {
+async function assembleBrowserOverlayRenderCommand(options: {
+  view: KavioDocument;
+  preset: KavioExportPreset;
+  outputPath: string;
+  driver: BrowserDriver;
+  continueOnFrameError: boolean;
+  deferCleanup(task: ReturnType<typeof createTemporaryFramesCleanupTask>): void;
+}): Promise<string[]> {
+  const workDir = await mkdtemp(join(tmpdir(), "kavio-render-"));
+  options.deferCleanup(
+    createTemporaryFramesCleanupTask(async () => {
+      await rm(workDir, { recursive: true, force: true });
+    }, "workdir")
+  );
+
+  const framePattern = join(workDir, "overlay-%05d.png");
+
+  // captureFrames manages browser-context cleanup (open → capture → close).
+  await captureFrames({
+    driver: options.driver,
+    composition: options.view,
+    continueOnFrameError: options.continueOnFrameError,
+    onFrame: async (capture) => {
+      const name = `overlay-${String(capture.frame).padStart(5, "0")}.png`;
+      await writeFile(join(workDir, name), capture.bytes);
+    }
+  });
+
+  return assembleRenderCommand({
+    view: options.view,
+    preset: options.preset,
+    framePattern,
+    outputPath: options.outputPath
+  });
+}
+
+function chromiumRevisionOf(driver: BrowserDriver | undefined): string {
   if (driver instanceof PlaywrightDriver && driver.chromiumVersion !== null) {
     return driver.chromiumVersion;
   }

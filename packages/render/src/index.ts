@@ -1,7 +1,14 @@
 export const KAVIO_RENDER_PACKAGE = "@kitsra/kavio-render";
 
 export { renderError, isRenderError, RENDER_ERROR_CODES, type RenderErrorCode, type RenderErrorOptions } from "./errors.js";
-export { assembleRenderCommand, type AssembleRenderCommandOptions } from "./assemble-command.js";
+export {
+  assembleDirectRenderCommand,
+  assembleRenderCommand,
+  getDirectRenderSupport,
+  type AssembleDirectRenderCommandOptions,
+  type AssembleRenderCommandOptions,
+  type DirectRenderSupport
+} from "./assemble-command.js";
 export { resolveFfmpegPath } from "./binaries.js";
 export {
   createFfmpegRunner,
@@ -20,6 +27,7 @@ export {
 export { PlaywrightDriver, type PlaywrightDriverOptions } from "./playwright-driver.js";
 export {
   renderComposition,
+  type RenderCompositionMode,
   type RenderCompositionOptions,
   type RenderCompositionResult
 } from "./render-composition.js";
