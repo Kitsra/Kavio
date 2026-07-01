@@ -197,7 +197,8 @@ assertEqual(successDriver.closed, 1, "frame capture loop closes the browser driv
 assertEqual(successDriver.viewportWidth, 1920, "frame capture loop passes a composition viewport to the driver");
 assertEqual(successDriver.frames.join(","), "0,1,2,3", "frame capture loop renders each requested frame in order");
 assertEqual(successDriver.captureOptions.every(Boolean), true, "frame capture loop defaults to transparent captures");
-assertEqual(frameLoopResult.captures.length, 4, "frame capture loop returns successful frame captures");
+assertEqual(frameLoopResult.captures.length, 0, "frame capture loop does not retain captures streamed via onFrame");
+assertEqual(frameLoopResult.capturedFrames, 4, "frame capture loop counts streamed captures");
 assertEqual(frameLoopResult.errors.length, 0, "successful frame capture loop has no frame errors");
 assertEqual(frameLoopResult.bytesCaptured, 8, "frame capture loop reports captured byte totals");
 assertEqual(
@@ -205,6 +206,24 @@ assertEqual(
   "open:none:0|frame:0:1|capture:0:1|frame:1:2|capture:1:2|frame:2:3|capture:2:3|frame:3:4|capture:3:4|complete:none:4",
   "frame capture loop reports open, frame, capture, and completion progress"
 );
+
+const retainDriver = new RecordingBrowserDriver();
+const retainedResult = await captureFrames({
+  driver: retainDriver,
+  composition: browserComposition,
+  frameCount: 2,
+  retainCaptures: true,
+  onFrame: () => {}
+});
+assertEqual(retainedResult.captures.length, 2, "retainCaptures keeps streamed captures when requested");
+
+const noSinkDriver = new RecordingBrowserDriver();
+const noSinkResult = await captureFrames({
+  driver: noSinkDriver,
+  composition: browserComposition,
+  frameCount: 2
+});
+assertEqual(noSinkResult.captures.length, 2, "captures are retained by default when no onFrame sink is provided");
 
 const failFastDriver = new RecordingBrowserDriver(new Set([1]));
 try {

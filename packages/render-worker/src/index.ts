@@ -285,6 +285,12 @@ export interface CaptureFramesOptions {
   startFrame?: number;
   frameCount?: number;
   continueOnFrameError?: boolean;
+  /**
+   * Keep every capture's bytes in the result `captures` array. Defaults to
+   * true only when no `onFrame` sink is provided; streaming consumers should
+   * not pay O(frames) memory for bytes they already handled.
+   */
+  retainCaptures?: boolean;
   onProgress?: (progress: FrameCaptureProgress) => void | Promise<void>;
   onFrame?: (capture: BrowserFrameCapture, progress: FrameCaptureProgress) => void | Promise<void>;
   onFrameError?: (failure: FrameCaptureFrameError, progress: FrameCaptureProgress) => void | Promise<void>;
@@ -474,6 +480,7 @@ export async function captureFrames(options: CaptureFramesOptions): Promise<Capt
     ...DEFAULT_BROWSER_FRAME_CAPTURE_OPTIONS,
     ...options.captureOptions
   };
+  const retainCaptures = options.retainCaptures ?? options.onFrame === undefined;
   const captures: BrowserFrameCapture[] = [];
   const errors: FrameCaptureFrameError[] = [];
   let completedFrames = 0;
@@ -527,7 +534,9 @@ export async function captureFrames(options: CaptureFramesOptions): Promise<Capt
         continue;
       }
 
-      captures.push(capture);
+      if (retainCaptures) {
+        captures.push(capture);
+      }
       capturedFrames += 1;
       completedFrames += 1;
       bytesCaptured += capture.bytes.byteLength;
