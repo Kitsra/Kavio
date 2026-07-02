@@ -52,6 +52,12 @@ declare module "ffmpeg-static" {
   export default ffmpegPath;
 }
 
+declare module "node:buffer" {
+  export const Buffer: {
+    from(data: string, encoding: "base64"): Uint8Array;
+  };
+}
+
 declare module "node:crypto" {
   export interface Hash {
     update(data: Uint8Array | string): Hash;
