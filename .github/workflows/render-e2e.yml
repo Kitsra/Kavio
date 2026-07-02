@@ -2,6 +2,17 @@ name: Render E2E
 
 on:
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "site/**"
+      - "**.md"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "site/**"
+      - "**.md"
 
 permissions:
   contents: read
@@ -32,8 +43,31 @@ jobs:
       - name: Verify render optional packages
         run: corepack pnpm run verify:render-optional-deps
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('packages/render/package.json') }}
+
+      # The Playwright CDN occasionally stalls after the download completes;
+      # bound each attempt and retry once instead of eating the job timeout.
       - name: Install Chromium
-        run: corepack pnpm --filter @kitsra/kavio-render exec playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 10
+        run: |
+          for attempt in 1 2; do
+            if timeout 240 corepack pnpm --filter @kitsra/kavio-render exec playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "playwright install attempt ${attempt} failed or stalled; retrying"
+          done
+          exit 1
+
+      # Browsers came from the cache; only the OS packages need installing.
+      - name: Install Chromium system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: corepack pnpm --filter @kitsra/kavio-render exec playwright install-deps chromium
 
       - name: Build
         run: corepack pnpm run build
